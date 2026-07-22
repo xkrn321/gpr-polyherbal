@@ -1,0 +1,153 @@
+Metadata-Version: 2.4
+Name: gpr-polyherbal
+Version: 1.0.0
+Summary: Bayesian optimization pipeline for multi-herb formula design using GPR + EHVI
+Author-email: Xukuran Abuduxuku <xukuran@hbtcm.edu.cn>
+License: MIT
+Project-URL: Homepage, https://github.com/xkrn321/gpr-polyherbal
+Project-URL: Repository, https://github.com/xkrn321/gpr-polyherbal
+Keywords: bayesian-optimization,gaussian-process,polyherbal,uniform-design,ethnopharmacology,traditional-medicine
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: scikit-learn>=1.3
+Requires-Dist: numpy>=1.24
+Dynamic: license-file
+
+# gpr-polyherbal 🔬
+
+**Bayesian Optimization Pipeline for Multi-Herb Formula Design**
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/)
+
+Gaussian Process Regression (GPR) + Expected Hypervolume Improvement (EHVI) for navigating the combinatorial explosion of polyherbal formulations. Part of the **Computational Ethnopharmacology** paradigm — the Design stage between Discovery and Validation.
+
+---
+
+## The Problem
+
+A 14-herb formula with 3 levels per herb requires **4.78 million experiments** (3¹⁴ full factorial). Even with Uniform Design reducing to 12 initial formulations, finding the Pareto-optimal composition demands intelligent search.
+
+**gpr-polyherbal** solves this by:
+
+```
+Uniform Design U12 → 12 initial formulations
+       ↓
+GPR (Matérn 5/2) → Response surface model
+       ↓
+EHVI acquisition → Suggest next best formulation
+       ↓
+3-5 active learning iterations → Pareto front convergence
+```
+
+---
+
+## Retrospective Validation
+
+Validated against 4 historical polyherbal optimization studies:
+
+| Study | Components | LOOCV R² | Recovery | EHVI Iters |
+|-------|:----------:|:--------:|:--------:|:----------:|
+| Wan 2021 | 3 | 0.72 | 50% | 3 |
+| Pang 2022 | 4 | 0.80 | 62% | 4 |
+| Zhou 2023 | 5 | 0.75 | 55% | 5 |
+| Yee 2024 | 6 | 0.70 | 48% | 5 |
+
+**Mean R² = 0.74** across all cases. Convergence within 3-5 iterations.
+
+---
+
+## Installation
+
+```bash
+pip install git+https://github.com/xkrn321/gpr-polyherbal.git
+```
+
+Or for development:
+
+```bash
+git clone https://github.com/xkrn321/gpr-polyherbal.git
+cd gpr-polyherbal
+pip install -e .
+```
+
+### Requirements
+
+- Python ≥ 3.9
+- scikit-learn ≥ 1.3
+- numpy ≥ 1.24
+
+---
+
+## Quick Start
+
+```python
+from gpr_polyherbal.validation import run_all_validations, train_gpr
+import numpy as np
+
+# Run all retrospective validations
+results = run_all_validations()
+for r in results:
+    print(f"{r.study}: R²={r.loocv_r2:.3f}, Recovery={r.recovery_rate:.1%}")
+
+# Train GPR on your own data
+X = np.random.dirichlet([1, 1, 1, 1], 16)  # 4-component, 16 experiments
+y = X @ [0.4, 0.3, 0.2, 0.1] + 0.05 * np.random.randn(16)
+
+gpr = train_gpr(X, y)
+y_pred, y_std = gpr.predict(X, return_std=True)
+print(f"R² = {gpr.score(X, y):.3f}")
+```
+
+---
+
+## Pipeline Architecture
+
+```
+src/gpr_polyherbal/
+├── __init__.py       # Package metadata
+├── validation.py     # Retrospective validation + 4 case studies
+├── kernel.py         # Matérn 5/2 kernel builder
+├── ehvi.py           # Expected Hypervolume Improvement acquisition
+└── uniform_design.py # UD table generator
+```
+
+---
+
+## Related Repositories
+
+- **ethno-profiler** — Systematic evidence mapping (Discovery stage)
+  [github.com/xkrn321/ethno-profiler](https://github.com/xkrn321/ethno-profiler)
+
+Together they form the **Computational Ethnopharmacology** toolchain:
+`ethno-profiler (Discovery) → gpr-polyherbal (Design) → Experimental validation`
+
+---
+
+## Citation
+
+```bibtex
+@software{abuduxuku2026gprpolyherbal,
+  author       = {Xukuran Abuduxuku and [Supervisor]},
+  title        = {gpr-polyherbal: Bayesian Optimization for Multi-Herb Formula Design},
+  year         = {2026},
+  version      = {1.0.0},
+  url          = {https://github.com/xkrn321/gpr-polyherbal},
+  license      = {MIT},
+}
+```
+
+---
+
+## License
+
+MIT License. See [LICENSE](LICENSE).
+
+---
+
+## Author
+
+**Xukuran Abuduxuku** (许库兰·阿不都许库尔)
+- College of Pharmacy, Hubei University of Chinese Medicine
+- Email: xukuran@hbtcm.edu.cn
