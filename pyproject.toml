@@ -5,11 +5,11 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "gpr-polyherbal"
 version = "1.0.0"
-description = "Bayesian optimization pipeline for multi-herb formula design using GPR + EHVI"
+description = "Gaussian Process Regression prototype for mixture-formula data with synthetic examples"
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
-    {name = "Xukuran Abuduxuku", email = "xukuran@hbtcm.edu.cn"},
+    {name = "许库兰·阿不都许库尔"},
 ]
 keywords = [
     "bayesian-optimization",

@@ -1,17 +1,7 @@
-"""
-Real GPR with scikit-learn Matérn kernel — Retrospective Validation.
+"""GPR helpers and synthetic demonstrations.
 
-Validates the GPR-EHVI pipeline against 4 historical polyherbal optimization studies:
-  Wan 2021: Polygonum orientale (3-component) → H9c2 cell viability
-  Pang 2022: Salvia miltiorrhiza (4-component) → antioxidant activity
-  Zhou 2023: Huangqi decoction (5-component) → immunomodulation
-  Yee 2024: Thai polyherbal (6-component) → anti-inflammatory
-
-Method: Train GPR on 50% of experimental points → predict optimum →
-         compare to full-data optimum (recovery rate).
-
-Results: LOOCV R² = 0.70-0.85 (PCI), 0.60-0.75 (Emax)
-         EHVI convergence: 3-5 iterations
+The demonstration data are generated in code. They are not published study
+data and do not validate a pharmacological hypothesis or an EHVI workflow.
 """
 
 import numpy as np
@@ -25,12 +15,11 @@ warnings.filterwarnings('ignore')
 
 @dataclass
 class ValidationResult:
-    """Results from one retrospective validation case."""
-    study: str
+    """Results from one synthetic demonstration."""
+    scenario: str
     n_components: int
-    loocv_r2: float
+    fit_r2: float
     recovery_rate: float
-    ehvi_iterations: int
     optimal_predicted: np.ndarray
     optimal_actual: np.ndarray
 
@@ -128,11 +117,11 @@ def retrospective_validate(
 
 # ── Four Historical Case Studies ──
 
-def run_all_validations() -> List[ValidationResult]:
-    """Run retrospective validation on all 4 historical cases."""
+def run_synthetic_demos() -> List[ValidationResult]:
+    """Run demonstrations on generated mixture data, not historical studies."""
     results = []
     
-    # Case 1: Wan 2021 — Polygonum orientale (3 components)
+    # Scenario 1: three-component synthetic mixture.
     np.random.seed(42)
     X1 = np.random.dirichlet([1, 1, 1], 12)  # Simplex-constrained
     y1 = (
@@ -146,20 +135,19 @@ def run_all_validations() -> List[ValidationResult]:
     r2 = 1 - np.sum((y1 - y_pred)**2) / np.sum((y1 - np.mean(y1))**2)
     
     results.append(ValidationResult(
-        study="Wan 2021 (Polygonum orientale)",
+        scenario="Synthetic mixture (3 components)",
         n_components=3,
-        loocv_r2=round(r2, 3),
+        fit_r2=round(r2, 3),
         recovery_rate=round(recovery, 3),
-        ehvi_iterations=3,
         optimal_predicted=pred,
         optimal_actual=actual,
     ))
     
-    # Cases 2-4: Simulated with varied complexity
-    for i, (name, n_comp, n_pts, r2_target) in enumerate([
-        ("Pang 2022 (Salvia miltiorrhiza)", 4, 16, 0.80),
-        ("Zhou 2023 (Huangqi decoction)", 5, 20, 0.75),
-        ("Yee 2024 (Thai polyherbal)", 6, 24, 0.70),
+    # Scenarios 2-4: generated with varied dimensions and sample counts.
+    for i, (name, n_comp, n_pts) in enumerate([
+        ("Synthetic mixture (4 components)", 4, 16),
+        ("Synthetic mixture (5 components)", 5, 20),
+        ("Synthetic mixture (6 components)", 6, 24),
     ]):
         np.random.seed(100 + i)
         X = np.random.dirichlet([1] * n_comp, n_pts)
@@ -173,11 +161,10 @@ def run_all_validations() -> List[ValidationResult]:
         r2 = 1 - np.sum((y - y_pred)**2) / np.sum((y - np.mean(y))**2)
         
         results.append(ValidationResult(
-            study=name,
+            scenario=name,
             n_components=n_comp,
-            loocv_r2=round(r2, 3),
+            fit_r2=round(r2, 3),
             recovery_rate=round(recovery, 3),
-            ehvi_iterations=min(5, 2 + i),
             optimal_predicted=pred,
             optimal_actual=actual,
         ))
@@ -189,23 +176,18 @@ def run_all_validations() -> List[ValidationResult]:
 
 if __name__ == "__main__":
     print("=" * 70)
-    print("GPR-Polyherbal: Retrospective Validation Suite")
+    print("GPR-Polyherbal: Synthetic Demonstrations (not empirical validation)")
     print("=" * 70)
     print()
     
     results = run_all_validations()
     
-    print(f"{'Study':45s} {'Comps':>5s} {'R²':>7s} {'Recovery':>9s} {'EHVI iters':>10s}")
-    print("-" * 80)
+    print(f"{'Scenario':40s} {'Comps':>5s} {'Fit R²':>7s} {'Recovery':>9s}")
+    print("-" * 66)
     
     for r in results:
-        print(f"{r.study:45s} {r.n_components:5d} {r.loocv_r2:7.3f} {r.recovery_rate:9.1%} {r.ehvi_iterations:10d}")
+        print(f"{r.scenario:40s} {r.n_components:5d} {r.fit_r2:7.3f} {r.recovery_rate:9.1%}")
     
     print()
-    r2_values = [r.loocv_r2 for r in results]
-    print(f"Mean LOOCV R²: {np.mean(r2_values):.3f}")
-    print(f"Range: {min(r2_values):.3f} - {max(r2_values):.3f}")
-    print()
-    print("Conclusion: GPR with Matérn 5/2 kernel achieves R² > 0.70 across")
-    print("all cases with 3-5 EHVI iterations, confirming the pipeline's viability")
-    print("for multi-herb formula optimization.")
+    print("These scores describe the generated examples only; they are not held-out")
+    print("study validation, EHVI results, or evidence of a pharmacological effect.")
