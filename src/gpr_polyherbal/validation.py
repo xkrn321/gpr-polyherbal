@@ -180,7 +180,7 @@ if __name__ == "__main__":
     print("=" * 70)
     print()
     
-    results = run_all_validations()
+    results = run_synthetic_demos()
     
     print(f"{'Scenario':40s} {'Comps':>5s} {'Fit R²':>7s} {'Recovery':>9s}")
     print("-" * 66)
